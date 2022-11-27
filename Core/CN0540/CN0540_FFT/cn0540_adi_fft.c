@@ -15,12 +15,12 @@
 
 static arm_cfft_radix4_instance_f32 S;
 
-void static FFT_maginutde_do_dB(struct fft_entry *fft_data, double sum);
-void static FFT_calculate_THD(struct fft_entry *fft_data, struct fft_measurements *fft_meas);
-void static FFT_calculate_noise(struct fft_entry *fft_data, struct fft_measurements *fft_meas);
-float static dbfs_to_volts(float vref, float value);
-void static FFT_windowing(struct fft_entry *fft_data, double *sum);
-void static FFT_waveform_stat(struct fft_entry *fft_data, struct fft_measurements *fft_meas);
+static void FFT_maginutde_do_dB(struct fft_entry *fft_data, double sum);
+static void FFT_calculate_THD(struct fft_entry *fft_data, struct fft_measurements *fft_meas);
+static void FFT_calculate_noise(struct fft_entry *fft_data, struct fft_measurements *fft_meas);
+static float dbfs_to_volts(float vref, float value);
+static void FFT_windowing(struct fft_entry *fft_data, double *sum);
+static void FFT_waveform_stat(struct fft_entry *fft_data, struct fft_measurements *fft_meas);
 
 /**
  * Initialize the FFT structure
@@ -181,7 +181,7 @@ void perform_FFT(uint32_t *data, struct fft_entry *fft_data, struct fft_measurem
  * @param *sum				-	pointer to sum of all the coeffs
  * 
  */
-void static FFT_windowing(struct fft_entry *fft_data, double *sum)
+static void FFT_windowing(struct fft_entry *fft_data, double *sum)
 {
 	uint8_t j;
 	uint16_t i;
@@ -218,7 +218,7 @@ void static FFT_windowing(struct fft_entry *fft_data, double *sum)
  * @param *fft_data -	fft_data structure
  * @param sum		-	sum of all windowing coeffs
  */
-void static FFT_maginutde_do_dB(struct fft_entry *fft_data, double sum)
+static void FFT_maginutde_do_dB(struct fft_entry *fft_data, double sum)
 {
 	uint16_t i;
 	float correction = 0;
@@ -248,13 +248,13 @@ void static FFT_maginutde_do_dB(struct fft_entry *fft_data, double sum)
  * @param *fft_data - fft_data structure
  * @param *fft_meas - fft_meas structure
  */
-void static FFT_calculate_THD(struct fft_entry *fft_data, struct fft_measurements *fft_meas)
+static void FFT_calculate_THD(struct fft_entry *fft_data, struct fft_measurements *fft_meas)
 {
 	const uint16_t first_nyquist_zone = fft_data->fft_length;
 	uint16_t i, j, k = 0, fund_freq = 0, harmonic_position;
 	int8_t m, nyquist_zone;
 	float mag_helper = -200.0, freq_helper, sum = 0.0, fund_mag = -200.0; 
-	float fund_pow_bins[21], harm_pow_bins[5][7];
+//	float fund_pow_bins[21], harm_pow_bins[5][7];
 	
 	// Looking for the fundamental frequency and amplitude
 	for(i = DC_BINS ; i < fft_data->fft_length ; i++) {												// Not counting DC bins
@@ -293,7 +293,7 @@ void static FFT_calculate_THD(struct fft_entry *fft_data, struct fft_measurement
 	// Power leakage of the fundamental
 	for(i = fft_meas->harmonics_freq[0] - FUND_BINS ; i <= fft_meas->harmonics_freq[0] + FUND_BINS ; i++) {
 		sum += powf(((fft_data->fft_magnitude_corrected[i] / (2.0*SQRT_2))), 2.0);
-		fund_pow_bins[k] = fft_data->fft_magnitude_corrected[i];
+//		fund_pow_bins[k] = fft_data->fft_magnitude_corrected[i];
 		k++;
 	}		
 	// Finishing the RSS of power-leaked fundamental
@@ -305,7 +305,7 @@ void static FFT_calculate_THD(struct fft_entry *fft_data, struct fft_measurement
 	for(j = 1 ; j <= 5 ; j++) {
 		for (i = fft_meas->harmonics_freq[j] - HARM_BINS; i <= fft_meas->harmonics_freq[j] + HARM_BINS; i++) {
 			sum += powf(((fft_data->fft_magnitude_corrected[i] / (2.0*SQRT_2))), 2.0);
-			harm_pow_bins[j - 1][k] = fft_data->fft_magnitude_corrected[i];
+//			harm_pow_bins[j - 1][k] = fft_data->fft_magnitude_corrected[i];
 			k++;
 		}		
 		// Finishing the RSS of power-leaked harmonics
@@ -325,7 +325,7 @@ void static FFT_calculate_THD(struct fft_entry *fft_data, struct fft_measurement
  * @param *fft_data - fft_data structure
  * @param *fft_meas - fft_meas structure
  */
-void static FFT_waveform_stat(struct fft_entry *fft_data, struct fft_measurements *fft_meas)
+static void FFT_waveform_stat(struct fft_entry *fft_data, struct fft_measurements *fft_meas)
 {
 	uint16_t i;
 	int16_t max_position, min_position;
@@ -390,7 +390,7 @@ void static FFT_waveform_stat(struct fft_entry *fft_data, struct fft_measurement
  * @param *fft_data - fft_data structure
  * @param *fft_meas - fft_meas structure
  */
-void static FFT_calculate_noise(struct fft_entry *fft_data, struct fft_measurements *fft_meas)
+static void FFT_calculate_noise(struct fft_entry *fft_data, struct fft_measurements *fft_meas)
 {
 	const float LW_DR_correction_const = 4.48;																		// Magic constant from the LabView FFT core correcting only dynamic range
 	uint16_t i; //, j;
@@ -484,7 +484,7 @@ void static FFT_calculate_noise(struct fft_entry *fft_data, struct fft_measureme
  * @param vref - reference voltage in volts
  * @param *fft_meas - fft_meas structure
  */
-float static dbfs_to_volts(float vref, float value)
+static float dbfs_to_volts(float vref, float value)
 {
 	return ( 2 * vref * powf(10.0, value / 20.0) );
 }

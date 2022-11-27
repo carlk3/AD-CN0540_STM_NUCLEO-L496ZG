@@ -63,7 +63,11 @@ int32_t spi_write_and_read(spi_desc *desc, uint8_t *data, uint8_t bytes_number) 
 	uint16_t Size = bytes_number;
 	uint32_t Timeout = 1000;
 
+	HAL_GPIO_WritePin(CS_ADC_GPIO_Port, CS_ADC_Pin, GPIO_PIN_RESET);
+	asm volatile("" ::: "memory");
 	HAL_StatusTypeDef hs = HAL_SPI_TransmitReceive(hspi, pTxData, pRxData, Size, Timeout);
+	asm volatile("" ::: "memory");
+	HAL_GPIO_WritePin(CS_ADC_GPIO_Port, CS_ADC_Pin, GPIO_PIN_SET);
 
 	if (HAL_OK == hs)
 		return SUCCESS;
@@ -1859,8 +1863,28 @@ int32_t ad77681_setup(struct ad77681_dev **device,
 	*status = stat;
 	*device = dev;
 
+	/* Configure ADA4945-1 FDA: */
+	ad77681_global_gpio(dev, AD77681_GLOBAL_GPIO_ENABLE);
+	/* Set direction of GPIO2 */
+	ad77681_spi_write_mask(dev,
+		AD77681_REG_GPIO_CONTROL,
+		AD77681_GPIO_CNTRL_GPIO2_OP_EN_MSK,
+		AD77681_GPIO_CNTRL_GPIO2_OP_EN(1));
+	/* Set direction of GPIO3 */
+	ad77681_spi_write_mask(dev,
+		AD77681_REG_GPIO_CONTROL,
+		AD77681_GPIO_CNTRL_GPIO3_OP_EN_MSK,
+		AD77681_GPIO_CNTRL_GPIO3_OP_EN(1));
+	// Set DISABLE_N:
+	ad77681_gpio_write(dev, 1, AD77681_GPIO2);
+	// Leave MODE at low power
+
 	if (!ret)
 		printf("ad77681 successfully initialized\n");
+
+//	On power-up, the user must apply a soft or hard reset to the device when using either control mode.
+//	A SYNC_IN pulse is also recommended after the reset or after any change to the device configuration.
+	ad77681_initiate_sync(dev);
 
 	return ret;
 }

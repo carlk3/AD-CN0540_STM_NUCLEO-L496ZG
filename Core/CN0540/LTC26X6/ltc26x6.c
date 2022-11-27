@@ -104,7 +104,10 @@ int32_t ltc26x6_init(struct ltc26x6_dev **device,
 int16_t ltc26x6_voltage_to_code(struct ltc26x6_dev *device, float dac_voltage,
                 uint16_t *code)
 {
-    uint32_t ltc26x6_full_scale = (2 << device->resolution) - 1;
+//    uint32_t ltc26x6_full_scale = (2 << device->resolution) - 1;
+    int32_t ltc26x6_full_scale = (2 << device->resolution) - 1;
+    assert(ltc26x6_full_scale > 0);
+
     // The LTC26X6 least significant bit value with given voltage reference
     float   ltc26x6_lsb = (float)(device->vref/ltc26x6_full_scale); 
     int32_t dac_code, ret;

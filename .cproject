@@ -58,6 +58,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Core/printf}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Core/CN0540}&quot;"/>
 								</option>
+								<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.warnings.extra.1736961075" name="Enable extra warning flags (-Wextra)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.warnings.extra" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.236761558" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>
 							<tool id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.1748143925" name="MCU G++ Compiler" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler">
@@ -103,7 +104,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="CN0540/platform_drivers/platform_support.cpp|CN0540/main.cpp|CN0540/platform_drivers/uart.cpp|CN0540/platform_drivers/timer.cpp|CN0540/platform_drivers/spi.cpp|CN0540/platform_drivers/pwm.cpp|CN0540/platform_drivers/irq.cpp|CN0540/platform_drivers/i2c.cpp|CN0540/platform_drivers/gpio.cpp|CN0540/platform_drivers/delay.cpp|CN0540/platform_drivers/aout.cpp|CN0540/platform_drivers/ain.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Core"/>
+						<entry excluding="CN0540/AD77681/no-OS.drivers.adc.ad77681-1.ad77681.c|CN0540/AD77681/ad7768-1.c|CN0540/platform_drivers/platform_support.cpp|CN0540/main.cpp|CN0540/platform_drivers/uart.cpp|CN0540/platform_drivers/timer.cpp|CN0540/platform_drivers/spi.cpp|CN0540/platform_drivers/pwm.cpp|CN0540/platform_drivers/irq.cpp|CN0540/platform_drivers/i2c.cpp|CN0540/platform_drivers/gpio.cpp|CN0540/platform_drivers/delay.cpp|CN0540/platform_drivers/aout.cpp|CN0540/platform_drivers/ain.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Core"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
 					</sourceEntries>
 				</configuration>
@@ -188,7 +189,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="CN0540/platform_drivers/platform_support.cpp|CN0540/main.cpp|CN0540/platform_drivers/uart.cpp|CN0540/platform_drivers/timer.cpp|CN0540/platform_drivers/spi.cpp|CN0540/platform_drivers/pwm.cpp|CN0540/platform_drivers/irq.cpp|CN0540/platform_drivers/i2c.cpp|CN0540/platform_drivers/gpio.cpp|CN0540/platform_drivers/delay.cpp|CN0540/platform_drivers/aout.cpp|CN0540/platform_drivers/ain.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Core"/>
+						<entry excluding="CN0540/AD77681/no-OS.drivers.adc.ad77681-1.ad77681.c|CN0540/AD77681/ad7768-1.c|CN0540/platform_drivers/platform_support.cpp|CN0540/main.cpp|CN0540/platform_drivers/uart.cpp|CN0540/platform_drivers/timer.cpp|CN0540/platform_drivers/spi.cpp|CN0540/platform_drivers/pwm.cpp|CN0540/platform_drivers/irq.cpp|CN0540/platform_drivers/i2c.cpp|CN0540/platform_drivers/gpio.cpp|CN0540/platform_drivers/delay.cpp|CN0540/platform_drivers/aout.cpp|CN0540/platform_drivers/ain.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Core"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
 					</sourceEntries>
 				</configuration>
@@ -211,4 +212,5 @@
 			<autodiscovery enabled="false" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 	</storageModule>
+	<storageModule moduleId="refreshScope"/>
 </cproject>

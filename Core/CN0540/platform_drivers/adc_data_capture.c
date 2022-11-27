@@ -221,6 +221,8 @@ size_t read_buffered_data(char *pbuf,
 			  uint32_t active_chns_mask,
 			  uint8_t sample_size_in_bytes)
 {
+	(void) active_chns_mask;
+
 	size_t samples_to_read = bytes /
 				 sample_size_in_bytes; 		// Bytes to sample conversion
 
@@ -267,6 +269,10 @@ size_t read_buffered_data(char *pbuf,
  */
 void data_capture_callback(void *ctx, uint32_t event, void *extra)
 {
+	(void) ctx;
+	(void) event;
+	(void) extra;
+
 	uint32_t adc_sample;
 
 	if (start_adc_data_capture == true) {

@@ -96,48 +96,48 @@ static void MX_TIM3_Init(void);
 
 
 void drdy_interrupt();
-int32_t static getUserInput(uint32_t *UserInput);
-void static go_to_error();
-void static print_title();
-void static print_prompt();
+static int32_t getUserInput(uint32_t *UserInput);
+static void go_to_error();
+static void print_title();
+static void print_prompt();
 //int32_t static getMenuSelect(uint16_t *menuSelect);
 //int32_t static getLargeMenuSelect(uint32_t *largeSelect);
-void static print_binary(uint8_t number, char *binary_number);
-void static menu_1_set_adc_powermode(void);
-void static menu_2_set_adc_clock_divider(void);
-void static menu_3_set_adc_filter_type(void);
-void static set_adc_FIR_filter(void);
-void static set_adc_SINC5_filter(void);
-void static set_adc_SINC3_filter(void);
-void static set_adc_50HZ_rej(void);
-void static set_adc_user_defined_FIR(void);
-void static menu_4_adc_buffers_controll(void);
-void static menu_5_set_default_settings(void);
-void static menu_6_set_adc_vcm(void);
-void static menu_7_adc_read_register(void);
-void static menu_8_adc_cont_read_data(void);
-//void static adc_data_read(void);
-void static cont_sampling();
-void static menu_9_reset_ADC(void);
-void static menu_10_power_down(void);
-void static menu_11_ADC_GPIO(void);
-void static adc_GPIO_write(void);
-void static adc_GPIO_inout(void);
-void static adc_GPIO_settings(void);
-void static menu_12_read_master_status(void);
-void static menu_13_mclk_vref(void);
-void static menu_14_print_measured_data(void);
-void static menu_15_set_adc_data_output_mode(void);
-void static menu_16_set_adc_diagnostic_mode(void);
-void static menu_17_do_the_fft(void);
-void static menu_18_fft_settings(void);
-void static menu_19_gains_offsets(void);
-void static menu_20_check_scratchpad(void);
-void static menu_21_piezo_offset(void);
-void static menu_22_set_DAC_output(void);
-void static get_mean_voltage(struct adc_data *measured_data, double *mean_voltage);
-void static adc_hard_reset(void);
-void static sdpk1_gpio_setup(void);
+static void print_binary(uint8_t number, char *binary_number);
+static void menu_1_set_adc_powermode(void);
+static void menu_2_set_adc_clock_divider(void);
+static void menu_3_set_adc_filter_type(void);
+static void set_adc_FIR_filter(void);
+static void set_adc_SINC5_filter(void);
+static void set_adc_SINC3_filter(void);
+static void set_adc_50HZ_rej(void);
+static void set_adc_user_defined_FIR(void);
+static void menu_4_adc_buffers_controll(void);
+static void menu_5_set_default_settings(void);
+static void menu_6_set_adc_vcm(void);
+static void menu_7_adc_read_register(void);
+static void menu_8_adc_cont_read_data(void);
+//static void adc_data_read(void);
+static void cont_sampling();
+static void menu_9_reset_ADC(void);
+static void menu_10_power_down(void);
+static void menu_11_ADC_GPIO(void);
+static void adc_GPIO_write(void);
+static void adc_GPIO_inout(void);
+static void adc_GPIO_settings(void);
+static void menu_12_read_master_status(void);
+static void menu_13_mclk_vref(void);
+static void menu_14_print_measured_data(void);
+static void menu_15_set_adc_data_output_mode(void);
+static void menu_16_set_adc_diagnostic_mode(void);
+static void menu_17_do_the_fft(void);
+static void menu_18_fft_settings(void);
+static void menu_19_gains_offsets(void);
+static void menu_20_check_scratchpad(void);
+static void menu_21_piezo_offset(void);
+static void menu_22_set_DAC_output(void);
+static void get_mean_voltage(struct adc_data *measured_data, double *mean_voltage);
+static void adc_hard_reset(void);
+static void sdpk1_gpio_setup(void);
 
 /* USER CODE END PFP */
 
@@ -217,6 +217,9 @@ int main(void)
 
   sdpk1_gpio_setup();                                                     // Setup SDP-K1 GPIOs
   adc_hard_reset();                                                       // Perform ADC hard reset
+
+  ad77681_soft_reset(device_adc);
+
   connected = ad77681_setup(&device_adc, init_params, &current_status);   // SETUP and check connection
   if(connected == FAILURE)
       go_to_error();
@@ -227,7 +230,8 @@ int main(void)
   update_FFT_enviroment(device_adc->vref, device_adc->mclk, device_adc->sample_rate, FFT_data);   // Update the Vref, Mclk, Sampling rate
   measured_data.samples = 4096;                                           // Initialize FFT with 4096 samples
   FFT_init(measured_data.samples, FFT_data);                              // Update sample count for FFT
-  #endif // CN0540_ADI_FFT_H_                                                    // FFT module is initializedd with 4096 samples and 7-term BH window
+  #endif // CN0540_ADI_FFT_H_
+  // FFT module is initializedd with 4096 samples and 7-term BH window
 
   print_title();
   print_prompt();
@@ -520,7 +524,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -628,16 +632,19 @@ static void MX_GPIO_Init(void)
   HAL_PWREx_EnableVddIO2();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(RESET_ADC_GPIO_Port, RESET_ADC_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(RESET_ADC_GPIO_Port, RESET_ADC_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOE, SYNC_IN_Pin|CSB_AUX_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(CSB_AUX_GPIO_Port, CSB_AUX_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, LD3_Pin|LD2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOD, LED1_Pin|LED2_Pin|CS_ADC_Pin|SHUTDOWN_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOD, LED1_Pin|LED2_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOD, CS_ADC_Pin|SHUTDOWN_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(USB_PowerSwitchOn_GPIO_Port, USB_PowerSwitchOn_Pin, GPIO_PIN_RESET);
@@ -710,7 +717,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : RESET_ADC_Pin */
   GPIO_InitStruct.Pin = RESET_ADC_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(RESET_ADC_GPIO_Port, &GPIO_InitStruct);
@@ -737,18 +744,18 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : SYNC_IN_Pin CSB_AUX_Pin */
-  GPIO_InitStruct.Pin = SYNC_IN_Pin|CSB_AUX_Pin;
+  /*Configure GPIO pins : SYNC_IN_Pin DRDY_AUX_Pin */
+  GPIO_InitStruct.Pin = SYNC_IN_Pin|DRDY_AUX_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : CSB_AUX_Pin */
+  GPIO_InitStruct.Pin = CSB_AUX_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : DRDY_AUX_Pin */
-  GPIO_InitStruct.Pin = DRDY_AUX_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(DRDY_AUX_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(CSB_AUX_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : LD3_Pin LD2_Pin */
   GPIO_InitStruct.Pin = LD3_Pin|LD2_Pin;
@@ -799,7 +806,7 @@ static void MX_GPIO_Init(void)
  * Error warning, in case of unsuccessfull SPI connection
  *
  */
-void static go_to_error()
+static void go_to_error()
 {
     int32_t connected = FAILURE;
 //    uint8_t scratchpad_sequence = 0xAD;
@@ -819,7 +826,7 @@ void static go_to_error()
  * Print title
  *
  */
-void static print_title() {
+static void print_title() {
     printf_("\n\r");
     printf_("****************************************************************\n");
     printf_("*      EVAL-CN0540-PMDZ Demonstration Program -- (mbed)        *\n");
@@ -836,7 +843,7 @@ void static print_title() {
  * Print main menu to console
  *
  */
-void static print_prompt() {
+static void print_prompt() {
     printf_("\n\nCommand Summary:\n\n");
     printf_("  1  - Set ADC power mode\n");
     printf_("  2  - Set ADC MCLK divider\n");
@@ -868,7 +875,7 @@ void static print_prompt() {
  * *UserInput = 0 if failure
  *
  */
-int32_t static getUserInput(uint32_t *UserInput)
+static int32_t getUserInput(uint32_t *UserInput)
 {
     long uart_val;
     int32_t ret;
@@ -888,7 +895,7 @@ int32_t static getUserInput(uint32_t *UserInput)
  * Set power mode
  *
  */
- void static menu_1_set_adc_powermode(void)
+ static void menu_1_set_adc_powermode(void)
  {
     uint32_t new_pwr_mode;
 
@@ -925,7 +932,7 @@ int32_t static getUserInput(uint32_t *UserInput)
  * Set clock divider
  *
  */
- void static menu_2_set_adc_clock_divider(void)
+ static void menu_2_set_adc_clock_divider(void)
  {
     uint32_t new_mclk_div;
 
@@ -969,7 +976,7 @@ int32_t static getUserInput(uint32_t *UserInput)
  * Set filter type
  *
  */
- void static menu_3_set_adc_filter_type(void)
+ static void menu_3_set_adc_filter_type(void)
 {
     uint32_t new_filter = 0;
 //    int32_t ret;
@@ -1014,7 +1021,7 @@ int32_t static getUserInput(uint32_t *UserInput)
  * Set SINC3 filter
  *
  */
-void static set_adc_SINC3_filter(void)
+static void set_adc_SINC3_filter(void)
 {
     uint32_t new_sinc3 = 0; //, new_sinc5 = 0;
     int32_t ret;
@@ -1026,7 +1033,8 @@ void static set_adc_SINC3_filter(void)
 
     ret = getUserInput(&new_sinc3);
 
-    if ((new_sinc3 >= 0) && (new_sinc3 <= 8192) && (ret == SUCCESS)) {
+//    if ((new_sinc3 >= 0) && (new_sinc3 <= 8192) && (ret == SUCCESS)) {
+	if ((new_sinc3 <= 8192) && (ret == SUCCESS)) {
         printf_("%lu\n", new_sinc3);
         ad77681_set_filter_type(device_adc, AD77681_SINC5_FIR_DECx32, AD77681_SINC3, new_sinc3);
         printf_(" SINC3 OSR is set to %lu\n", (new_sinc3 + 1) * 32);
@@ -1040,7 +1048,7 @@ void static set_adc_SINC3_filter(void)
  * Set SINC5 filter
  *
  */
-void static set_adc_SINC5_filter(void)
+static void set_adc_SINC5_filter(void)
 {
     uint32_t new_sinc5;
 
@@ -1102,7 +1110,7 @@ void static set_adc_SINC5_filter(void)
  * Set FIR filter
  *
  */
-void static set_adc_FIR_filter(void)
+static void set_adc_FIR_filter(void)
 {
     uint32_t new_fir;
 
@@ -1154,7 +1162,7 @@ void static set_adc_FIR_filter(void)
  * Set 50HZ rejection bit when SINC3 is being used
  *
  */
-void static set_adc_50HZ_rej(void)
+static void set_adc_50HZ_rej(void)
 {
     uint32_t new_50Hz;
 
@@ -1187,7 +1195,7 @@ void static set_adc_50HZ_rej(void)
  * Insert user-defined FIR filter coeffs
  *
  */
-void static set_adc_user_defined_FIR(void)
+static void set_adc_user_defined_FIR(void)
 {
     const uint8_t coeff_reg_length = 56; // Maximum allowed number of coefficients in the coeff register
 
@@ -1205,7 +1213,7 @@ void static set_adc_user_defined_FIR(void)
  * AIN and REF buffers controll
  *
  */
- void static menu_4_adc_buffers_controll(void)
+ static void menu_4_adc_buffers_controll(void)
  {
     uint32_t new_AIN_buffer = 0, new_REF_buffer = 0, new_buffer = 0;
 
@@ -1317,7 +1325,7 @@ void static set_adc_user_defined_FIR(void)
  * Default ADC Settings
  *
  */
- void static menu_5_set_default_settings(void)
+ static void menu_5_set_default_settings(void)
  {
     int32_t default_settings_flag  = ad77681_setup(&device_adc, init_params, &current_status);
 
@@ -1332,7 +1340,7 @@ void static set_adc_user_defined_FIR(void)
  * VCM output controll
  *
  */
- void static menu_6_set_adc_vcm(void)
+ static void menu_6_set_adc_vcm(void)
  {
     uint32_t new_vcm = 0;
 
@@ -1395,12 +1403,12 @@ void static set_adc_user_defined_FIR(void)
  * Register read
  *
  */
- void static menu_7_adc_read_register(void)
+ static void menu_7_adc_read_register(void)
  {
     uint32_t new_reg_to_read = 0;
     uint8_t reg_read_buf[3], read_adc_data[6]; //, hex_number = 0;
     uint8_t HI = 0, MID = 0, LO = 0;
-    char binary_number[8]; //, other_register[2] = "";
+    char binary_number[9] = {0}; //, other_register[2] = "";
 //    double voltage;
 
     printf_(" Read desired register: \n");
@@ -1415,7 +1423,7 @@ void static set_adc_user_defined_FIR(void)
     printf_("  9 - 0x1B        - SINC3 Dec. rate LSB\n");
     printf_(" 10 - 0x1C        - Duty cycle ratio\n");
     printf_(" 11 - 0x1D        - Sync, Reset\n");
-    printf_(" 12 - 0x1E        - GPIO Controll\n");
+    printf_(" 12 - 0x1E        - GPIO Control\n");
     printf_(" 13 - 0x1F        - GPIO Write\n");
     printf_(" 14 - 0x20        - GPIO Read\n");
     printf_(" 15 - 0x21 - 0x23 - Offset register\n");
@@ -1485,7 +1493,7 @@ void static set_adc_user_defined_FIR(void)
     case 12:
         ad77681_spi_reg_read(device_adc, AD77681_REG_GPIO_CONTROL, reg_read_buf);
         print_binary(reg_read_buf[1], binary_number);
-        printf_(" Value of 0x1E - GPIO Controll is: 0x%x  0b%s\n", reg_read_buf[1], binary_number);
+        printf_(" Value of 0x1E - GPIO Control is: 0x%x  0b%s\n", reg_read_buf[1], binary_number);
         break;
     case 13:
         ad77681_spi_reg_read(device_adc, AD77681_REG_GPIO_WRITE, reg_read_buf);
@@ -1538,7 +1546,7 @@ void static set_adc_user_defined_FIR(void)
  * Read ADC data
  *
  */
-void static menu_8_adc_cont_read_data(void)
+static void menu_8_adc_cont_read_data(void)
 {
     uint32_t new_sample_count = 0;
     int32_t ret;
@@ -1565,14 +1573,19 @@ void static menu_8_adc_cont_read_data(void)
  * ADC Continuous read
  *
  */
-void static cont_sampling() {
+static void cont_sampling() {
 	uint8_t buf[6];
 
-	ad77681_set_continuos_read(device_adc, AD77681_CONTINUOUS_READ_ENABLE);
-	__enable_irq();                                             // Enable all interupts
-//    drdy.enable_irq();                                          // Enable interrupt on DRDY pin
+	ad77681_set_continuos_read(device_adc, AD77681_CONTINUOUS_READ_DISABLE);    // Disable continuous ADC read
+
+	__enable_irq();			// Enable all interupts
+//    drdy.enable_irq();	// Enable interrupt on DRDY pin
 	LL_EXTI_EnableIT_0_31(DRDY_Pin);
-//	drdy.fall(&drdy_interrupt);                                 // Interrupt on falling edne of DRDY
+    __HAL_GPIO_EXTI_CLEAR_IT(DRDY_Pin);
+	asm volatile("" ::: "memory");
+
+	ad77681_set_continuos_read(device_adc, AD77681_CONTINUOUS_READ_ENABLE);
+//	drdy.fall(&drdy_interrupt);	// Interrupt on falling edne of DRDY
 
 	while (!measured_data.finish) { // While loop. Waiting for the measurements to be completed
 		if (int_event == true) {      // Checks if Interrupt Occurred
@@ -1593,7 +1606,7 @@ void static cont_sampling() {
  * Reset ADC
  *
  */
- void static menu_9_reset_ADC(void)
+ static void menu_9_reset_ADC(void)
  {
     uint32_t new_reset_option = 0;
 
@@ -1626,7 +1639,7 @@ void static cont_sampling() {
  *
  *
  */
-void static adc_hard_reset() {
+static void adc_hard_reset() {
 //    adc_reset = 0;  // Set ADC reset pin to Low
 	HAL_GPIO_WritePin(RESET_ADC_GPIO_Port, RESET_ADC_Pin, GPIO_PIN_RESET);
 //	mdelay(100);    // Delay 100ms
@@ -1641,11 +1654,11 @@ void static adc_hard_reset() {
  * Sleep mode / Wake up ADC
  *
  */
- void static menu_10_power_down(void)
+ static void menu_10_power_down(void)
  {
     uint32_t new_sleep = 0;
 
-    printf_(" Controll sleep mode of the ADC: \n");
+    printf_(" Control sleep mode of the ADC: \n");
     printf_("  1 - Put ADC to sleep mode\n");
     printf_("  2 - Wake up ADC\n");
     printf_(" Select an option: \n");
@@ -1670,17 +1683,17 @@ void static adc_hard_reset() {
 }
 
 /**
- * ADC's GPIO Controll
+ * ADC's GPIO Control
  *
  */
- void static menu_11_ADC_GPIO(void)
+ static void menu_11_ADC_GPIO(void)
  {
     uint8_t GPIO_state;
     uint32_t new_gpio_sel = 0;
     char binary_number[8];
 //    int32_t ret_val = FAILURE, ret;
 
-    printf_(" ADC GPIO Controll: \n");
+    printf_(" ADC GPIO Control: \n");
     printf_("  1 - Read from GPIO\n");
     printf_("  2 - Write to  GPIO\n");
     printf_("  3 - Set GPIO as input / output\n");
@@ -1716,7 +1729,7 @@ void static adc_hard_reset() {
  * Write to GPIOs, part of the ADC_GPIO function
  *
  */
-void static adc_GPIO_write(void)
+static void adc_GPIO_write(void)
 {
     uint32_t new_gpio_write = 0, new_value = 0;
     int32_t ret, ret_val __attribute__ ((unused));
@@ -1795,7 +1808,7 @@ void static adc_GPIO_write(void)
  * GPIO direction, part of the ADC_GPIO function
  *
  */
-void static adc_GPIO_inout(void)
+static void adc_GPIO_inout(void)
 {
     uint32_t new_gpio_inout = 0, new_gpio_inout_set = 0;
     int32_t ret_val  __attribute__ ((unused));
@@ -1893,7 +1906,7 @@ void static adc_GPIO_inout(void)
  * Additional GPIO settings, part of the ADC_GPIO function
  *
  */
-void static adc_GPIO_settings(void)
+static void adc_GPIO_settings(void)
 {
     uint32_t new_gpio_settings = 0;
 
@@ -1926,7 +1939,7 @@ void static adc_GPIO_settings(void)
  * Read ADC status from status registers
  *
  */
- void static menu_12_read_master_status(void)
+ static void menu_12_read_master_status(void)
  {
 //    uint8_t reg_read_buf[3];
 //    char binary_number[8];
@@ -1975,7 +1988,7 @@ void static adc_GPIO_settings(void)
  * Set Vref anc MCLK as "exteranl" values, depending on you setup
  *
  */
- void static menu_13_mclk_vref(void)
+ static void menu_13_mclk_vref(void)
  {
     uint32_t input = 0, new_settings = 0;
     int32_t ret;
@@ -2033,7 +2046,7 @@ void static adc_GPIO_settings(void)
  * Print measured data and transfered to voltage
  *
  */
- void static menu_14_print_measured_data(void)
+ static void menu_14_print_measured_data(void)
  {
     double voltage;
     int32_t shifted_data;
@@ -2071,7 +2084,7 @@ void static adc_GPIO_settings(void)
  * Set data output mode
  *
  */
-void static menu_15_set_adc_data_output_mode(void)
+static void menu_15_set_adc_data_output_mode(void)
 {
     uint32_t new_data_mode = 0, new_length = 0, new_status = 0, new_crc = 0; //, ret;
 
@@ -2202,7 +2215,7 @@ void static menu_15_set_adc_data_output_mode(void)
  * Set diagnostic mode
  *
  */
-void static menu_16_set_adc_diagnostic_mode(void)
+static void menu_16_set_adc_diagnostic_mode(void)
 {
     uint32_t new_diag_mode = 0;
 
@@ -2244,7 +2257,7 @@ void static menu_16_set_adc_diagnostic_mode(void)
  * Do the FFT
  *
  */
-void static menu_17_do_the_fft(void)
+static void menu_17_do_the_fft(void)
 {
     printf_(" FFT in progress...\n");
     measured_data.samples = FFT_data->fft_length * 2;
@@ -2272,7 +2285,7 @@ void static menu_17_do_the_fft(void)
  * Setting of the FFT module
  *
  */
-void static menu_18_fft_settings(void)
+static void menu_18_fft_settings(void)
 {
     uint32_t new_menu_select, new_window, new_sample_count;
 
@@ -2363,7 +2376,7 @@ void static menu_18_fft_settings(void)
  * Set Gains and Offsets
  *
  */
-void static menu_19_gains_offsets(void)
+static void menu_19_gains_offsets(void)
 {
     uint32_t gain_offset, new_menu_select;
     int32_t ret;
@@ -2406,7 +2419,7 @@ void static menu_19_gains_offsets(void)
  * Chceck read and write functionaity by writing to and reading from scratchpad register
  *
  */
-void static menu_20_check_scratchpad(void)
+static void menu_20_check_scratchpad(void)
 {
     int32_t ret;
     uint32_t ret_val;
@@ -2418,7 +2431,8 @@ void static menu_20_check_scratchpad(void)
 
     ret = getUserInput(&new_menu_select);
 
-    if ((new_menu_select <= 0xFF) && (new_menu_select >= 0) && (ret == SUCCESS)) {
+//    if ((new_menu_select <= 0xFF) && (new_menu_select >= 0) && (ret == SUCCESS)) {
+    if ((new_menu_select <= 0xFF) && (ret == SUCCESS)) {
         chceck_sequence = (uint8_t)(new_menu_select);
         ret_val = ad77681_scratchpad(device_adc, &chceck_sequence);
         printf_("  Insered sequence:  %lu\n  Returned sequence: %d\n", new_menu_select, chceck_sequence);
@@ -2437,7 +2451,7 @@ void static menu_20_check_scratchpad(void)
  * There is lot of averaging going on, because of quite noisy piezo accelerometer
  * It will take some time
  */
-void static menu_21_piezo_offset(void)
+static void menu_21_piezo_offset(void)
 {
     uint8_t ltc2606_res = 16;
     uint32_t dac_code = 0;
@@ -2456,6 +2470,18 @@ void static menu_21_piezo_offset(void)
     // Set the oversamplig ratio to high value, to extract DC
     ad77681_set_filter_type(device_adc, AD77681_SINC5_FIR_DECx32, AD77681_SINC3, SINC3_odr);
 
+    /*
+	On power-up, the user must apply a soft or hard reset to the device when using either control mode.
+	A SYNC_IN pulse is also recommended after the reset or after any change to the device configuration.
+
+	SYNC_IN receives the synchronous signal from SYNC_OUT or from the main controller.
+	SYNC_IN enables synchronization of multiple AD7768-1 devices that require simultaneous sampling.
+	A SYNC_IN pulse is always required when the device configuration changes in any way
+	(for example, if the filter decimation rate changes).
+	Apply SYNC_IN pulses directly after a DRDY pulse occurs.
+	*/
+	ad77681_initiate_sync(device_adc);
+
     // successive approximation algorithm
     printf_("\nInitialize SAR loop (DAC MSB set to high)\n");
     // Set DAC code to half scale
@@ -2464,6 +2490,7 @@ void static menu_21_piezo_offset(void)
     ltc26x6_write_code(device_dac, write_update_command, dac_code);
     // Wait for DAC output to settle
     wait_ms(500);
+
     // Set desired number of samples for every iteration
     measured_data.samples = 100;
     measured_data.finish = false;
@@ -2505,10 +2532,11 @@ void static menu_21_piezo_offset(void)
         dac_code_arr[sar_loop - 1] = dac_code;
         mean_voltage_arr[sar_loop - 1] = mean_voltage;
     }
-    min_voltage = abs(mean_voltage_arr[0]);
+//    min_voltage = abs(mean_voltage_arr[0]);
+    min_voltage = fabs(mean_voltage_arr[0]);
     for (min_find = 0;  min_find < 16; min_find++) {
-        if (min_voltage > abs(mean_voltage_arr[min_find])) {
-            min_voltage = abs(mean_voltage_arr[min_find]);
+        if (min_voltage > fabs(mean_voltage_arr[min_find])) {
+            min_voltage = fabs(mean_voltage_arr[min_find]);
             min_index = min_find;
         }
     }
@@ -2529,7 +2557,7 @@ void static menu_21_piezo_offset(void)
  * @param mean_voltage      Mean Voltage
  * @param measured_data     The structure carying measured data
  */
-void static get_mean_voltage(struct adc_data *measured_data, double *mean_voltage)
+static void get_mean_voltage(struct adc_data *measured_data, double *mean_voltage)
 {
 //    int32_t shifted_data;
     double sum = 0, voltage = 0;
@@ -2546,7 +2574,7 @@ void static get_mean_voltage(struct adc_data *measured_data, double *mean_voltag
  * Set output of the on-board DAC in codes or in voltage
  *
  */
-void static menu_22_set_DAC_output(void)
+static void menu_22_set_DAC_output(void)
 {
     int16_t dac_status = SUCCESS;
     uint16_t  code ;
@@ -2595,7 +2623,7 @@ void static menu_22_set_DAC_output(void)
  * Prints out an array in binary form
  *
  */
-void static print_binary(uint8_t number, char *binary_number)
+static void print_binary(uint8_t number, char *binary_number)
 {
     for (int8_t i = 7; i >= 0; i--) {
         if (number & 1)
@@ -2611,7 +2639,7 @@ void static print_binary(uint8_t number, char *binary_number)
  *
  *
  */
-void static sdpk1_gpio_setup(void) {
+static void sdpk1_gpio_setup(void) {
 	// Enable DAC buffer & other buffer
 //    buffer_en = GPIO_HIGH;
 	HAL_GPIO_WritePin(SHUTDOWN_GPIO_Port, SHUTDOWN_Pin, GPIO_PIN_SET);
@@ -2653,6 +2681,8 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
      ex: printf_("Wrong parameters value: file %s on line %d\r\n", file, line) */
+	(void)file;
+	(void)line;
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
