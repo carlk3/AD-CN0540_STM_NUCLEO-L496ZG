@@ -16,6 +16,7 @@ As a sort of verification test, I connected a 1 kΩ resistor across P1 (GND and 
     LSB noise:52.000
 
 `12 - Read ADC master status` reports no FAULTs. Then, I did `18 - FFT settings`, `3 - Print FFT plot`, and then graphed the results:
+
 ![1k resistor](images/1k_Amplitude_Frequency.png)
 
 I connected a [Wilcoxon 786A general purpose accelerometer](https://buy.wilcoxon.com/786a.html).
