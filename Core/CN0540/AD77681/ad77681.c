@@ -55,18 +55,38 @@
 /************************** Functions Implementation **************************/
 /******************************************************************************/
 
+static bool spi_xfer_cmplt;
+static void callback(SPI_HandleTypeDef *phspi) {
+	if (&hspi1 == phspi)
+		spi_xfer_cmplt = true;
+}
+//void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *phspi) { callback(phspi); }
+//void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *phspi) { callback(phspi); }
+void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *phspi) { callback(phspi); }
+void HAL_SPI_ErrorCallback(SPI_HandleTypeDef *hspi) {
+    uint32_t err = HAL_SPI_GetError(hspi);
+    printf("SPI Error: 0x%lX\r\n", err);
+    Error_Handler();
+}
+
 int32_t spi_write_and_read(spi_desc *desc, uint8_t *data, uint8_t bytes_number) {
 	(void) desc;
 	SPI_HandleTypeDef *hspi = &hspi1;
 	uint8_t *pTxData = data;
 	uint8_t *pRxData = data;
 	uint16_t Size = bytes_number;
-	uint32_t Timeout = 1000;
+//	uint32_t Timeout = 1000;
 
 	HAL_GPIO_WritePin(CS_ADC_GPIO_Port, CS_ADC_Pin, GPIO_PIN_RESET);
+	spi_xfer_cmplt = false;
+
 	asm volatile("" ::: "memory");
-	HAL_StatusTypeDef hs = HAL_SPI_TransmitReceive(hspi, pTxData, pRxData, Size, Timeout);
+
+	HAL_StatusTypeDef hs = HAL_SPI_TransmitReceive_DMA(hspi, pTxData, pRxData, Size); //, Timeout);
+	while (!spi_xfer_cmplt);
+
 	asm volatile("" ::: "memory");
+
 	HAL_GPIO_WritePin(CS_ADC_GPIO_Port, CS_ADC_Pin, GPIO_PIN_SET);
 
 	if (HAL_OK == hs)
