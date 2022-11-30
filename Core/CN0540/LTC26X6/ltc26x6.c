@@ -41,11 +41,23 @@
 #include <stdlib.h>
 #include <math.h>
 //
+#include "stm32l4xx_hal.h"
+//
 #include "main.h"
 #include "cn0540_init_params.h"
 //
 #include "ltc26x6.h"
 
+static bool i2c_tx_cmplt;
+void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *hi2c) {
+	if (&hi2c1 == hi2c)
+		i2c_tx_cmplt = true;
+}
+void HAL_I2C_ErrorCallback(I2C_HandleTypeDef *hi2c) {
+	uint32_t err = HAL_I2C_GetError(hi2c);
+	printf("I2C Error: 0x%lX\r\n", err);
+	Error_Handler();
+}
 /**
  * @brief Write data to a slave device.
  * @param desc - The I2C descriptor.
@@ -58,13 +70,18 @@
  */
 int32_t i2c_write(i2c_desc *desc, uint8_t *data, uint8_t bytes_number, uint8_t stop_bit) {
 	(void) stop_bit;
-	uint32_t Timeout = 1000;
-	HAL_StatusTypeDef rc = HAL_I2C_Master_Transmit(&hi2c1, desc->slave_address, data, bytes_number, Timeout);
-	if (HAL_OK == rc) {
-		return SUCCESS;
-	} else {
+	i2c_tx_cmplt = false;
+
+	asm volatile("" ::: "memory");
+
+	HAL_StatusTypeDef rc = HAL_I2C_Master_Transmit_IT(&hi2c1, desc->slave_address, data, bytes_number);
+	if (HAL_OK != rc)
 		return FAILURE;
-	}
+
+	asm volatile("" ::: "memory");
+
+	while (!i2c_tx_cmplt);
+	return SUCCESS;
 }
 
 /**
