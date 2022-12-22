@@ -75,19 +75,28 @@ int32_t spi_write_and_read(spi_desc *desc, uint8_t *data, uint8_t bytes_number) 
 	uint8_t *pTxData = data;
 	uint8_t *pRxData = data;
 	uint16_t Size = bytes_number;
-
-	HAL_GPIO_WritePin(CS_ADC_GPIO_Port, CS_ADC_Pin, GPIO_PIN_RESET);
 	spi_xfer_cmplt = false;
 
-	asm volatile("" ::: "memory");
+	HAL_GPIO_WritePin(CS_ADC_GPIO_Port, CS_ADC_Pin, GPIO_PIN_RESET);
+
+	// >= 2.5 ns delay
+	__COMPILER_BARRIER();
+	__NOP(); // 12.5 ns at 80 MHz
+	__COMPILER_BARRIER();
 
 	HAL_StatusTypeDef hs = HAL_SPI_TransmitReceive_DMA(hspi, pTxData, pRxData, Size);
 	if (HAL_OK != hs)
 		return FAILURE;
 
-	asm volatile("" ::: "memory");
+	__COMPILER_BARRIER();
 
 	while (!spi_xfer_cmplt);
+
+	// >= 6 ns delay
+	__COMPILER_BARRIER();
+	__NOP(); // 12.5 ns at 80 MHz
+	__COMPILER_BARRIER();
+
 	HAL_GPIO_WritePin(CS_ADC_GPIO_Port, CS_ADC_Pin, GPIO_PIN_SET);
 	return SUCCESS;
 }
