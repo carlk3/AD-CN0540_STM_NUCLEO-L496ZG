@@ -44,3 +44,10 @@ I (loosely) attached a vibrator and got this:
     LSB noise: 18949.000
 
 ![786A vibrating](images/786A_vib_Amplitude_Frequency.png)
+
+## Requirements
+* [STM32CubeIDE](https://www.st.com/en/development-tools/stm32cubeide.html)
+* [CMSIS-DSP libraries](https://github.com/ARM-software/CMSIS-DSP). Some information about how to install the libraries can be found at
+  * https://community.st.com/t5/stm32-mcus/configuring-dsp-libraries-on-stm32cubeide/ta-p/49637
+and
+  * https://community.st.com/t5/stm32cubemx-mcu/where-is-cmsis-in-latest-cubeide/td-p/93073
